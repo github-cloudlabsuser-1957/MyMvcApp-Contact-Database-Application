@@ -8,59 +8,135 @@ public class UserController : Controller
 {
     public static System.Collections.Generic.List<User> userlist = new System.Collections.Generic.List<User>();
 
-        // GET: User
-        public ActionResult Index()
+    // GET: User
+    public ActionResult Index()
+    {
+        return View(userlist);
+    }
+
+    // GET: User/Details/5
+    public ActionResult Details(int id)
+    {
+        var user = userlist.FirstOrDefault(u => u.Id == id);
+        if (user == null)
         {
-            // Implement the Index method here
+            return NotFound();
+        }
+        return View(user);
+    }
+
+    // GET: User/Create
+    public ActionResult Create()
+    {
+        return View();
+    }
+
+    // POST: User/Create
+    [HttpPost]
+    public ActionResult Create(User user)
+    {
+        if (user == null)
+        {
+            return BadRequest("User cannot be null.");
         }
 
-        // GET: User/Details/5
-        public ActionResult Details(int id)
+        if (ModelState.IsValid)
         {
-            // Implement the details method here
+            userlist ??= new List<User>();
+            userlist.Add(user);
+            TempData["Message"] = $"User '{user.Name}' has been successfully created.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: User/Create
-        public ActionResult Create()
+        return View(user);
+    }
+
+    // GET: User/Edit/5
+    public ActionResult Edit(int id)
+    {
+        var user = userlist.FirstOrDefault(u => u.Id == id);
+        if (user == null)
         {
-            //Implement the Create method here
+            return NotFound();
+        }
+        return View(user);
+    }
+
+    // POST: User/Edit/5
+    [HttpPost]
+    public ActionResult Edit(int id, User user)
+    {
+        if (user == null)
+        {
+            return BadRequest("User cannot be null.");
         }
 
-        // POST: User/Create
-        [HttpPost]
-        public ActionResult Create(User user)
+        var existingUser = userlist?.FirstOrDefault(u => u.Id == id);
+        if (existingUser == null)
         {
-            // Implement the Create method (POST) here
+            return NotFound();
         }
 
-        // GET: User/Edit/5
-        public ActionResult Edit(int id)
+        if (ModelState.IsValid)
         {
-            // This method is responsible for displaying the view to edit an existing user with the specified ID.
-            // It retrieves the user from the userlist based on the provided ID and passes it to the Edit view.
+            existingUser.Name = user.Name;
+            existingUser.Email = user.Email;
+            TempData["Message"] = $"User '{user.Name}' has been successfully updated.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // POST: User/Edit/5
-        [HttpPost]
-        public ActionResult Edit(int id, User user)
+        return View(user);
+    }
+
+    // GET: User/Delete/5
+    public ActionResult Delete(int id)
+    {
+        var user = userlist.FirstOrDefault(u => u.Id == id);
+        if (user == null)
         {
-            // This method is responsible for handling the HTTP POST request to update an existing user with the specified ID.
-            // It receives user input from the form submission and updates the corresponding user's information in the userlist.
-            // If successful, it redirects to the Index action to display the updated list of users.
-            // If no user is found with the provided ID, it returns a HttpNotFoundResult.
-            // If an error occurs during the process, it returns the Edit view to display any validation errors.
+            return NotFound();
+        }
+        return View(user);
+    }
+
+    // POST: User/Delete/5
+    [HttpPost, ActionName("Delete")]
+    public ActionResult DeleteConfirmed(int id)
+    {
+        var user = userlist?.FirstOrDefault(u => u.Id == id);
+        if (user == null)
+        {
+            return NotFound();
         }
 
-        // GET: User/Delete/5
-        public ActionResult Delete(int id)
+        userlist.Remove(user);
+        TempData["Message"] = $"User '{user.Name}' has been successfully deleted.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    // GET: User/Search
+    public ActionResult Search(string query)
+    {
+        if (userlist == null)
         {
-            // Implement the Delete method here
+            userlist = new List<User>();
         }
 
-        // POST: User/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, IFormCollection collection)
+        if (string.IsNullOrWhiteSpace(query))
         {
-            // Implement the Delete method (POST) here
+            TempData["Message"] = "Showing all users.";
+            return View("Index", userlist); // Return all users if no query is provided
         }
+
+        var filteredUsers = userlist
+            .Where(u => u.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || 
+                        u.Email.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        TempData["Message"] = filteredUsers.Any() 
+            ? $"Found {filteredUsers.Count} user(s) matching '{query}'."
+            : $"No users found matching '{query}'.";
+
+        return View("Index", filteredUsers); // Reuse the Index view to display results
+    }
 }

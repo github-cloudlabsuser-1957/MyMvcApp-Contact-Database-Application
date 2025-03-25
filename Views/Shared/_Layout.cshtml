@@ -26,6 +26,10 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+                    <form class="d-flex" asp-controller="User" asp-action="Search" method="get">
+                        <input class="form-control me-2" type="search" name="query" placeholder="Search users..." aria-label="Search">
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
                 </div>
             </div>
         </nav>
@@ -34,6 +38,16 @@
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
+    </div>
+
+    <div class="container mt-3">
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
     </div>
 
     <footer class="border-top footer text-muted">
